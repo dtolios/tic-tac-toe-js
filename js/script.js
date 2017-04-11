@@ -44,6 +44,7 @@ const Game = (function () {
     $('.box').hover(
         (ev) => {
             $(ev.target).css('background-image', `url(${symbol})`);
+            $(ev.target).css('background-size', `100px 100px`);
         },
         (ev) => {
             $(ev.target).css('background-image', 'initial');
@@ -51,7 +52,14 @@ const Game = (function () {
     );
 
     $('.box').on('click', (ev) => {
-        $(ev.target).css('background-image', `url(${symbol})`);
+        if(currPlayer === 'player1') {
+            $(ev.target).addClass('box-filled-1');
+            $(ev.target).off();
+        }
+        else {
+            $(ev.target).addClass('box-filled-2');
+            $(ev.target).off();
+        }
     });
 }
 

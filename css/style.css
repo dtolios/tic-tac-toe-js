@@ -131,10 +131,12 @@ h1 {
 .boxes .box:nth-child(3n) {
     margin-right: 0; }
 .boxes .box-filled-1 {
-    background: #FFA000 url(../img/o.svg);
+    background: #FFA000 url(../img/o.svg) no-repeat center center;
+    background-size: 100px 100px;
 }
 .boxes .box-filled-2 {
-    background: #3688C3 url(../img/x.svg);
+    background: #3688C3 url(../img/x.svg) no-repeat center center;
+    background-size: 100px 100px;
 }
 
 
