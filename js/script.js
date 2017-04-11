@@ -42,14 +42,17 @@ const Game = (function () {
     }
 
     $('.box').hover(
-        () => {
-            console.log('hey');
-            $(this).css('background-image', 'url(img/o.svg) no-repeat');
+        (ev) => {
+            $(ev.target).css('background-image', `url(${symbol})`);
         },
-        () => {
-            $(this).css('background-image', 'initial');
+        (ev) => {
+            $(ev.target).css('background-image', 'initial');
         }
     );
+
+    $('.box').on('click', (ev) => {
+        $(ev.target).css('background-image', `url(${symbol})`);
+    });
 }
 
     function init() {
