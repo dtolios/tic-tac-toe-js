@@ -2,12 +2,27 @@ const Game = (function () {
 
     const $body = $('body');
     const $board = $('#board');
-    const $box = $('.box');
+
     const $startScreen = $('<div class="screen screen-start" id="start"><header><h1>Tic Tac Toe</h1><a href="#" class="button">Start game</a></header></div>');
     const $endScreen = $('<div class="screen screen-win" id="finish"><header><h1>Tic Tac Toe</h1><p class="message"></p><a href="#" class="button">New game</a></header></div>');
     let winner = 'none';
-    const boardState = ['NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN'];
 
+    const players = [
+        {
+            name: 'player1',
+            symbol: 'O',
+            filePath: 'img/o.svg',
+            isAI: false,
+            spacesOwned: []
+        },
+        {
+            name: 'player2',
+            symbol: 'X',
+            filePath: 'img/x.svg',
+            isAI: false,
+            spacesOwned: []
+        }
+    ];
 
     // GAME START and GAME LOOP //
     function init() {
@@ -24,23 +39,48 @@ const Game = (function () {
             removeStartScreen();
             appendBoard();
             const startingPlayer = getStartingPlayer();
-            playGame(startingPlayer);
+            playGame(startingPlayer, 1);
         });
 
     }
 
-    function playGame(player) {
-        let turn = 1;
+    function playGame(player, turn) {
+        if(turn === 10 || winner !== 'none')
+            endGame(winner);
+
+        let current = 0;
+        let next = 1;
+
         $(`#${player}`).addClass('active');
-        while(turn !== 9) {
-            $box.on('click', takeTurn(player, event));
-            turn += 1;
-            if(player === 'player1')
-                player = 'player2';
-            else
-                player = 'player1';
+        if(player === 'player1') {
+            current = 0;
+            next = 1;
         }
-        endGame(winner);
+        else {
+            current = 1;
+            next = 0;
+        }
+
+        const $box = $('.box').not('.box-filled-1, .box-filled-2');
+
+        $box.hover(
+            (ev) => {
+                $(ev.target).css('background-image', `url(${players[current].filePath})`);
+                $(ev.target).css('background-size', `100px 100px`);
+            },
+            (ev) => {
+                $(ev.target).css('background-image', 'initial');
+            }
+        );
+
+        $box.on('click', (ev) => {
+            $(ev.target).addClass(`box-filled-${current+1}`);
+            $(`#${player}`).removeClass('active');
+            turn += 1;
+            $box.off();
+            playGame(players[next].name, turn);
+        });
+
     }
 
     function endGame(winner) {
@@ -56,43 +96,14 @@ const Game = (function () {
             $('.message').text('It\'s a Tie!');
         }
 
-        const $sbutton = $('.button');
+        const $button = $('.button');
 
-        $sbutton.on('click', () => {
+        $button.on('click', () => {
             removeEndScreen();
             appendBoard();
             const newStartingPlayer = getStartingPlayer();
             playGame(newStartingPlayer);
         });
-    }
-
-    function takeTurn(currPlayer, event) {
-        let symbol = '';
-        if (currPlayer === 'player1') {
-            symbol = 'img/o.svg';
-        }
-        else {
-            symbol = 'img/x.svg';
-        }
-
-        $box.hover(
-            (ev) => {
-                $(ev.target).css('background-image', `url(${symbol})`);
-                $(ev.target).css('background-size', `100px 100px`);
-            },
-            (ev) => {
-                $(ev.target).css('background-image', 'initial');
-            }
-        );
-
-        if(currPlayer === 'player1') {
-            $(event.target).addClass('box-filled-1');
-            $(event.target).off();
-        }
-        else {
-            $(event.target).addClass('box-filled-2');
-            $(event.target).off();
-        }
     }
 
     // RENDER FUNCTIONS //
