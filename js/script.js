@@ -92,11 +92,11 @@ const Game = (function () {
         removeBoard();
         appendEndScreen();
 
-        if(winner === 'player1') {
+        if (winner === 'player1') {
             $('#finish').addClass('screen-win-one');
             $('.message').text('Winner');
         }
-        else if(winner === 'player2') {
+        else if (winner === 'player2') {
             $('#finish').addClass('screen-win-two');
             $('.message').text('Winner');
         }
@@ -108,7 +108,7 @@ const Game = (function () {
         const $button = $('.button');
 
         $button.on('click', () => {
-            $('#finish').removeClass('screen-win-one screen-win-two screen-win-tie')
+            $('#finish').removeClass('screen-win-one screen-win-two screen-win-tie');
             removeEndScreen();
             appendBoard();
             const newStartingPlayer = getStartingPlayer();
