@@ -86,11 +86,18 @@ const Game = (function () {
     }
 
     function endGame(winner) {
+        $('.box').removeClass('box-filled-1 box-filled-2').css('background-image', 'initial');
+        players[0].spacesOwned = [];
+        players[1].spacesOwned = [];
         removeBoard();
         appendEndScreen();
 
         if(winner === 'player1') {
             $('#finish').addClass('screen-win-one');
+            $('.message').text('Winner');
+        }
+        else if(winner === 'player2') {
+            $('#finish').addClass('screen-win-two');
             $('.message').text('Winner');
         }
         else {
