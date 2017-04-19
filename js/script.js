@@ -108,6 +108,7 @@ const Game = (function () {
         const $button = $('.button');
 
         $button.on('click', () => {
+            $('#finish').removeClass('screen-win-one screen-win-two screen-win-tie')
             removeEndScreen();
             appendBoard();
             const newStartingPlayer = getStartingPlayer();
