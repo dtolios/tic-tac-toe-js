@@ -45,6 +45,7 @@ const Game = (function () {
     }
 
     function playGame(player, turn) {
+        winner = checkWinner();
         if(turn === 10 || winner !== 'none')
             endGame(winner);
 
@@ -75,6 +76,7 @@ const Game = (function () {
 
         $box.on('click', (ev) => {
             $(ev.target).addClass(`box-filled-${current+1}`);
+            players[current].spacesOwned.push($(ev.target).index());
             $(`#${player}`).removeClass('active');
             turn += 1;
             $box.off();
@@ -140,8 +142,91 @@ const Game = (function () {
             return 'player2';
     }
 
-    function hasWon() {
-        winner = 'player1';
+    function checkWinner() {
+        // Horizontal: 0 1 2 / 3 4 5 / 6 7 8
+        if(isHorizontal(players[0].spacesOwned))
+            return players[0].name;
+        else if(isHorizontal(players[1].spacesOwned))
+            return players[1].name;
+        // Vertical: 0 3 6 / 1 4 7 / 2 5 8
+        else if(isVertical(players[0].spacesOwned))
+            return players[0].name;
+        else if(isVertical(players[1].spacesOwned))
+            return players[1].name;
+        // Diagonal: 0 4 8 / 2 4 6
+        else if(isDiagonal(players[0].spacesOwned))
+            return players[0].name;
+        else if(isDiagonal(players[1].spacesOwned))
+            return players[1].name;
+        else
+            return 'none';
+    }
+
+    function isHorizontal(arr) {
+        if(arr.includes(0)) {
+            if(arr.includes(1)) {
+                if(arr.includes(2)) {
+                    return true;
+                }
+            }
+        }
+        if(arr.includes(3)) {
+            if(arr.includes(4)) {
+                if(arr.includes(5)) {
+                    return true;
+                }
+            }
+        }
+        if(arr.includes(6)) {
+            if(arr.includes(7)) {
+                if(arr.includes(8)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    function isVertical(arr) {
+        if(arr.includes(0)) {
+            if(arr.includes(3)) {
+                if(arr.includes(6)) {
+                    return true;
+                }
+            }
+        }
+        if(arr.includes(1)) {
+            if(arr.includes(4)) {
+                if(arr.includes(7)) {
+                    return true;
+                }
+            }
+        }
+        if(arr.includes(2)) {
+            if(arr.includes(5)) {
+                if(arr.includes(8)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    function isDiagonal(arr) {
+        if(arr.includes(0)) {
+            if(arr.includes(4)) {
+                if(arr.includes(8)) {
+                    return true;
+                }
+            }
+        }
+        if(arr.includes(2)) {
+            if(arr.includes(4)) {
+                if(arr.includes(6)) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
