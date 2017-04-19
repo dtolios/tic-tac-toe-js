@@ -111,7 +111,7 @@ const Game = (function () {
             removeEndScreen();
             appendBoard();
             const newStartingPlayer = getStartingPlayer();
-            playGame(newStartingPlayer);
+            playGame(newStartingPlayer, 1);
         });
     }
 
