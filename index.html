@@ -8,6 +8,16 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<div class="screen screen-start" id="start">
+    <header>
+        <h1>Tic Tac Toe</h1>
+        <a href="#" class="button">Start game</a>
+        <form class="name-input">
+            <label for="name">Player Name:</label>
+            <input type="text" id="name" name="player_name">
+        </form>
+    </header>
+</div>
 <div class="board" id="board">
     <header>
         <h1>Tic Tac Toe</h1>
@@ -35,6 +45,10 @@
                 </svg>
             </li>
         </ul>
+        <ul class="player-names">
+            <li>Player 1: </li>
+            <li>Player 2: </li>
+        </ul>
     </header>
     <ul class="boxes">
         <li class="box"></li>
@@ -47,6 +61,13 @@
         <li class="box"></li>
         <li class="box"></li>
     </ul>
+</div>
+<div class="screen screen-win" id="finish">
+    <header>
+        <h1>Tic Tac Toe</h1>
+        <p class="message"></p>
+        <a href="#" class="button">New game</a>
+    </header>
 </div>
 <script src="js/jquery-3.2.0.min.js"></script>
 <script src="js/script.js"></script>

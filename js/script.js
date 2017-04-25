@@ -1,43 +1,58 @@
 const Game = (function () {
 
+    // Frequently used jQuery selectors //
     const $body = $('body');
     const $board = $('#board');
+    const $startScreen = $('#start');
+    const $endScreen = $('#finish');
 
-    const $startScreen = $('<div class="screen screen-start" id="start"><header><h1>Tic Tac Toe</h1><a href="#" class="button">Start game</a></header></div>');
-    const $endScreen = $('<div class="screen screen-win" id="finish"><header><h1>Tic Tac Toe</h1><p class="message"></p><a href="#" class="button">New game</a></header></div>');
     let winner = 'none';
+    let availableSpaces = [0,1,2,3,4,5,6,7,8];
 
+    // players array contains two objects, one for each player //
     const players = [
         {
-            name: 'player1',
+            id: 'player1',
             symbol: 'O',
             filePath: 'img/o.svg',
             isAI: false,
-            spacesOwned: []
+            spacesOwned: [],
+            name: ''
         },
         {
-            name: 'player2',
+            id: 'player2',
             symbol: 'X',
             filePath: 'img/x.svg',
             isAI: false,
-            spacesOwned: []
+            spacesOwned: [],
+            name: ''
         }
     ];
 
-    // GAME START and GAME LOOP //
+    // REQUIRES: only call this function the first time the page loads
+    // MODIFIES: removes start, board, and finish html from index.html
+    // EFFECTS:  initializes the game by removing html and calling the startGame function
     function init() {
+        removeStart();
         removeBoard();
+        removeFinish();
         startGame();
     }
 
+    // REQUIRES:
+    // MODIFIES: appends the start screen to index.html and adds a button click event listener
+    // EFFECTS:  on click, begins the
     function startGame() {
 
-        appendStartScreen();
+        appendStart();
+
         const $button = $('.button');
 
         $button.on('click', () => {
-            removeStartScreen();
+            players[0].name = $('input[name=player_name]').val();
+            removeStart();
             appendBoard();
+            displayNames();
             const startingPlayer = getStartingPlayer();
             playGame(startingPlayer, 1);
         });
@@ -60,6 +75,8 @@ const Game = (function () {
         else {
             current = 1;
             next = 0;
+            takeTurn(turn);
+            return;
         }
 
         const $box = $('.box').not('.box-filled-1, .box-filled-2');
@@ -77,11 +94,26 @@ const Game = (function () {
         $box.on('click', (ev) => {
             $(ev.target).addClass(`box-filled-${current+1}`);
             players[current].spacesOwned.push($(ev.target).index());
+            const index = availableSpaces.indexOf($(ev.target).index());
+            availableSpaces.splice(index, 1);
             $(`#${player}`).removeClass('active');
             turn += 1;
             $box.off();
-            playGame(players[next].name, turn);
+            playGame(players[next].id, turn);
         });
+
+    }
+
+    function takeTurn(turn) {
+
+        // First shuffle the available spaces array
+        shuffle(availableSpaces);
+        const space = availableSpaces.pop();
+        players[1].spacesOwned.push(space);
+        $(`.box:nth-child(${space})`).addClass('box-filled-2');
+        $(`#${players[1].id}`).removeClass('active');
+        turn += 1;
+        playGame(players[0].id, turn);
 
     }
 
@@ -90,15 +122,18 @@ const Game = (function () {
         players[0].spacesOwned = [];
         players[1].spacesOwned = [];
         removeBoard();
-        appendEndScreen();
+        appendFinish();
 
         if (winner === 'player1') {
             $('#finish').addClass('screen-win-one');
-            $('.message').text('Winner');
+            if(players[0].name !== 'Anonymous')
+                $('.message').text(`${players[0].name} has won!`);
+            else
+                $('.message').text('Winner');
         }
         else if (winner === 'player2') {
             $('#finish').addClass('screen-win-two');
-            $('.message').text('Winner');
+            $('.message').text(`The ${players[1].name} has won!`);
         }
         else {
             $('#finish').addClass('screen-win-tie');
@@ -109,7 +144,7 @@ const Game = (function () {
 
         $button.on('click', () => {
             $('#finish').removeClass('screen-win-one screen-win-two screen-win-tie');
-            removeEndScreen();
+            removeFinish();
             appendBoard();
             const newStartingPlayer = getStartingPlayer();
             playGame(newStartingPlayer, 1);
@@ -117,6 +152,14 @@ const Game = (function () {
     }
 
     // RENDER FUNCTIONS //
+    function appendStart() {
+        $startScreen.appendTo($body);
+    }
+
+    function removeStart() {
+        $startScreen.remove();
+    }
+
     function appendBoard() {
         $board.appendTo($body);
     }
@@ -124,24 +167,44 @@ const Game = (function () {
     function removeBoard() {
         $board.remove();
     }
-
-    function appendStartScreen() {
-        $startScreen.appendTo($body);
-    }
-
-    function removeStartScreen() {
-        $startScreen.remove();
-    }
-
-    function appendEndScreen() {
+    function appendFinish() {
         $endScreen.appendTo($body);
     }
 
-    function removeEndScreen() {
+    function removeFinish() {
         $endScreen.remove();
     }
 
+    function displayNames() {
+        const $playerNames = $('.player-names li');
+        if(players[0].name === '')
+            players[0].name = 'Anonymous';
+        $playerNames.first().text(`Player 1: ${players[0].name}`);
+        $playerNames.last().text(`Player 2: ${players[1].name}`);
+    }
+
     // HELPER FUNCTIONS //
+    function shuffle(array) {
+        let currentIndex = array.length;
+        let temporaryValue = 0;
+        let randomIndex = 0;
+
+        // While there remain elements to shuffle...
+        while (0 !== currentIndex) {
+
+            // Pick a remaining element...
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
+
+            // And swap it with the current element.
+            temporaryValue = array[currentIndex];
+            array[currentIndex] = array[randomIndex];
+            array[randomIndex] = temporaryValue;
+        }
+
+        return array;
+    }
+
     function getStartingPlayer() {
         const coin = Math.floor(Math.random() * 2);
         if (coin === 1)
@@ -153,19 +216,19 @@ const Game = (function () {
     function checkWinner() {
         // Horizontal: 0 1 2 / 3 4 5 / 6 7 8
         if(isHorizontal(players[0].spacesOwned))
-            return players[0].name;
+            return players[0].id;
         else if(isHorizontal(players[1].spacesOwned))
-            return players[1].name;
+            return players[1].id;
         // Vertical: 0 3 6 / 1 4 7 / 2 5 8
         else if(isVertical(players[0].spacesOwned))
-            return players[0].name;
+            return players[0].id;
         else if(isVertical(players[1].spacesOwned))
-            return players[1].name;
+            return players[1].id;
         // Diagonal: 0 4 8 / 2 4 6
         else if(isDiagonal(players[0].spacesOwned))
-            return players[0].name;
+            return players[0].id;
         else if(isDiagonal(players[1].spacesOwned))
-            return players[1].name;
+            return players[1].id;
         else
             return 'none';
     }
