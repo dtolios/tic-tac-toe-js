@@ -53,33 +53,61 @@ const Game = (function () {
             removeStart();
             appendBoard();
             displayNames();
-            const startingPlayer = getStartingPlayer();
-            playGame(startingPlayer, 1);
+            playGame();
         });
 
     }
 
-    function playGame(player, turn) {
-        winner = checkWinner();
-        if(turn === 10 || winner !== 'none')
-            endGame(winner);
+    function playGame() {
 
+        let player = getStartingPlayer();
+        let turn = 0;
         let current = 0;
         let next = 1;
 
-        $(`#${player}`).addClass('active');
-        if(player === 'player1') {
-            current = 0;
-            next = 1;
-        }
-        else {
+        if(player === 'player2') {
             current = 1;
             next = 0;
-            takeTurn(turn);
-            return;
         }
 
-        const $box = $('.box').not('.box-filled-1, .box-filled-2');
+
+        const $box = $('.box');
+        $(`#${player}`).addClass('active');
+
+        $box.on('click', (ev) => {
+            // mark the box with the proper symbol
+            $(ev.target).addClass(`box-filled-${current+1}`);
+            // push the space's index onto the correct player's spacesOwned array
+            players[current].spacesOwned.push($(ev.target).index());
+            // get the index in the availableSpaces array that the target space index is
+            const index = availableSpaces.indexOf($(ev.target).index());
+            // remove that index from the availableSpaces array
+            availableSpaces.splice(index, 1);
+            // remove the active player class
+            $(`#${player}`).removeClass('active');
+            // increment the turn number
+            turn += 1;
+            // turn off the listener for this box
+            $(ev.target).off();
+            // check for winner
+            winner = checkWinner();
+            if(turn === 10 || winner !== 'none')
+                endGame(winner);
+
+            if(player === 'player1') {
+                current = 1;
+                next = 0;
+                player = 'player2';
+            }
+            else {
+                current = 0;
+                next = 1;
+                player = 'player1';
+            }
+
+            $(`#${player}`).addClass('active');
+
+        });
 
         $box.hover(
             (ev) => {
@@ -90,30 +118,6 @@ const Game = (function () {
                 $(ev.target).css('background-image', 'initial');
             }
         );
-
-        $box.on('click', (ev) => {
-            $(ev.target).addClass(`box-filled-${current+1}`);
-            players[current].spacesOwned.push($(ev.target).index());
-            const index = availableSpaces.indexOf($(ev.target).index());
-            availableSpaces.splice(index, 1);
-            $(`#${player}`).removeClass('active');
-            turn += 1;
-            $box.off();
-            playGame(players[next].id, turn);
-        });
-
-    }
-
-    function takeTurn(turn) {
-
-        // First shuffle the available spaces array
-        shuffle(availableSpaces);
-        const space = availableSpaces.pop();
-        players[1].spacesOwned.push(space);
-        $(`.box:nth-child(${space})`).addClass('box-filled-2');
-        $(`#${players[1].id}`).removeClass('active');
-        turn += 1;
-        playGame(players[0].id, turn);
 
     }
 
@@ -167,6 +171,7 @@ const Game = (function () {
     function removeBoard() {
         $board.remove();
     }
+
     function appendFinish() {
         $endScreen.appendTo($body);
     }
