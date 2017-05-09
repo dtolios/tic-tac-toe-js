@@ -164,6 +164,15 @@ input[type="text"]:focus {
 }
 
 /* Board Player Name Styles */
+.start-buttons {
+    margin-top: 30px
+}
+.start-buttons .button {
+    width: 160px;
+    margin: 10px;
+}
+
+/* Board Player Name Styles */
 .player-names {
     margin-top: 10px;
 }

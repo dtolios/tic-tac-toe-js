@@ -15,7 +15,6 @@ const Game = (function () {
             id: 'player1',
             symbol: 'O',
             filePath: 'img/o.svg',
-            isAI: false,
             spacesOwned: [],
             name: ''
         },
@@ -23,7 +22,6 @@ const Game = (function () {
             id: 'player2',
             symbol: 'X',
             filePath: 'img/x.svg',
-            isAI: false,
             spacesOwned: [],
             name: ''
         }
@@ -48,17 +46,24 @@ const Game = (function () {
 
         const $button = $('.button');
 
-        $button.on('click', () => {
+        $button.on('click', (ev) => {
             players[0].name = $('input[name=player_name]').val();
+            players[1].name = 'Friend';
+            const $target = $(ev.target);
+            let isAIGame = false;
+            if($target.is('.pve')) {
+                isAIGame = true;
+                players[1].name = 'Computer';
+            }
             removeStart();
             appendBoard();
             displayNames();
-            playGame();
+            playGame(isAIGame);
         });
 
     }
 
-    function playGame() {
+    function playGame(isAIGame) {
 
         let player = getStartingPlayer();
         let turn = 0;
@@ -68,41 +73,64 @@ const Game = (function () {
         if(player === 'player2') {
             current = 1;
             next = 0;
+            if(isAIGame) {
+                // take first turn
+                takeAITurn();
+                turn += 1;
+                current = 0;
+                next = 1;
+                player = 'player1';
+            }
         }
 
 
-        const $box = $('.box');
+        const $box = $('.box').not('.box-filled-1, .box-filled-2');
         $(`#${player}`).addClass('active');
 
         $box.on('click', (ev) => {
             // mark the box with the proper symbol
             $(ev.target).addClass(`box-filled-${current+1}`);
+
             // push the space's index onto the correct player's spacesOwned array
             players[current].spacesOwned.push($(ev.target).index());
+
             // get the index in the availableSpaces array that the target space index is
             const index = availableSpaces.indexOf($(ev.target).index());
+
             // remove that index from the availableSpaces array
             availableSpaces.splice(index, 1);
+
             // remove the active player class
             $(`#${player}`).removeClass('active');
+
             // increment the turn number
             turn += 1;
+
             // turn off the listener for this box
             $(ev.target).off();
+
             // check for winner
             winner = checkWinner();
-            if(turn === 10 || winner !== 'none')
-                endGame(winner);
+            if(turn === 9 || winner !== 'none')
+                endGame(winner, isAIGame);
 
-            if(player === 'player1') {
-                current = 1;
-                next = 0;
-                player = 'player2';
+            if(isAIGame) {
+                takeAITurn();
+                turn += 1;
+                if(turn === 9)
+                    endGame(winner, isAIGame);
             }
             else {
-                current = 0;
-                next = 1;
-                player = 'player1';
+                if (player === 'player1') {
+                    current = 1;
+                    next = 0;
+                    player = 'player2';
+                }
+                else {
+                    current = 0;
+                    next = 1;
+                    player = 'player1';
+                }
             }
 
             $(`#${player}`).addClass('active');
@@ -121,13 +149,21 @@ const Game = (function () {
 
     }
 
-    function endGame(winner) {
+    function endGame(winner, isAIGame) {
+        // Reset the board by initializing the spaces/boxes to their original state
         $('.box').removeClass('box-filled-1 box-filled-2').css('background-image', 'initial');
+
+        // Clear the spacesOwned array for both players
         players[0].spacesOwned = [];
         players[1].spacesOwned = [];
+        // Reset the availableSpaces array
+        availableSpaces = [0,1,2,3,4,5,6,7,8];
+
+        // Render the finish screen
         removeBoard();
         appendFinish();
 
+        // Render correct view based on outcome of game
         if (winner === 'player1') {
             $('#finish').addClass('screen-win-one');
             if(players[0].name !== 'Anonymous')
@@ -137,7 +173,7 @@ const Game = (function () {
         }
         else if (winner === 'player2') {
             $('#finish').addClass('screen-win-two');
-            $('.message').text(`The ${players[1].name} has won!`);
+            $('.message').text(`${players[1].name} has won!`);
         }
         else {
             $('#finish').addClass('screen-win-tie');
@@ -150,8 +186,7 @@ const Game = (function () {
             $('#finish').removeClass('screen-win-one screen-win-two screen-win-tie');
             removeFinish();
             appendBoard();
-            const newStartingPlayer = getStartingPlayer();
-            playGame(newStartingPlayer, 1);
+            playGame(isAIGame);
         });
     }
 
@@ -208,6 +243,24 @@ const Game = (function () {
         }
 
         return array;
+    }
+
+    function takeAITurn() {
+        // shuffle the stack
+        shuffle(availableSpaces);
+        const spaceNum = availableSpaces.pop();
+
+        // mark the box with the proper symbol
+        const $space = $(`.boxes li:nth-child(${spaceNum+1})`);
+        $space.addClass('box-filled-2');
+        $space.css('background-image', `url(${players[1].filePath})`);
+        $space.off();
+        // push the space's index onto the correct player's spacesOwned array
+        players[1].spacesOwned.push(spaceNum);
+        // check for winner
+        winner = checkWinner();
+        if(winner !== 'none')
+            endGame(winner, true);
     }
 
     function getStartingPlayer() {
